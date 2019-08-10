@@ -38,7 +38,7 @@ mod viewport;
 use chrono::Local;
 use log::LevelFilter;
 
-use conway::universe::{BigBang, Universe, CellState, Region, PlayerBuilder};
+use conway::universe::{BigBang, Universe, GenState, CellState, Region, PlayerBuilder};
 use conway::grids::CharGrid;
 use conway::rle::Pattern;
 use conway::ConwayResult;
@@ -139,118 +139,13 @@ impl ColorSettings {
 
 
 fn init_patterns(s: &mut MainState) -> ConwayResult<()> {
-    let _pat = Pattern("10$10b16W$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW$10bW$10bW$10b16W48$100b2A5b2A$100b2A5b2A2$104b2A$104b2A5$122b2Ab2A$121bA5bA$121bA6bA2b2A$121b3A3bA3b2A$126bA!".to_owned());
-    //XXX apply to universe, then return Ok
-    //XXX return Ok(());
-    // TODO: remove the following
-    /*
-    // R pentomino
-    s.uni.toggle(16, 15, 0)?;
-    s.uni.toggle(17, 15, 0)?;
-    s.uni.toggle(15, 16, 0)?;
-    s.uni.toggle(16, 16, 0)?;
-    s.uni.toggle(16, 17, 0)?;
-    */
+    let pat = Pattern("10$10b16W$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW14bW$10bW$10bW$10bW$10b16W48$100b2A5b2A$100b2A5b2A2$104b2A$104b2A5$122b2Ab2A$121bA5bA$121bA6bA2b2A$121b3A3bA3b2A$126bA!".to_owned());
+    s.uni.write_pattern(&pat)?;
 
-    /*
-    // Acorn
-    s.uni.toggle(23, 19, 0)?;
-    s.uni.toggle(24, 19, 0)?;
-    s.uni.toggle(24, 17, 0)?;
-    s.uni.toggle(26, 18, 0)?;
-    s.uni.toggle(27, 19, 0)?;
-    s.uni.toggle(28, 19, 0)?;
-    s.uni.toggle(29, 19, 0)?;
-    */
-
-
-    // Simkin glider gun
-    s.uni.toggle(100, 70, 0)?;
-    s.uni.toggle(100, 71, 0)?;
-    s.uni.toggle(101, 70, 0)?;
-    s.uni.toggle(101, 71, 0)?;
-
-    s.uni.toggle(104, 73, 0)?;
-    s.uni.toggle(104, 74, 0)?;
-    s.uni.toggle(105, 73, 0)?;
-    s.uni.toggle(105, 74, 0)?;
-
-    s.uni.toggle(107, 70, 0)?;
-    s.uni.toggle(107, 71, 0)?;
-    s.uni.toggle(108, 70, 0)?;
-    s.uni.toggle(108, 71, 0)?;
-
-    /* eater
-    s.uni.toggle(120, 87, 0)?;
-    s.uni.toggle(120, 88, 0)?;
-    s.uni.toggle(121, 87, 0)?;
-    s.uni.toggle(121, 89, 0)?;
-    s.uni.toggle(122, 89, 0)?;
-    s.uni.toggle(123, 89, 0)?;
-    s.uni.toggle(123, 90, 0)?;
-    */
-
-    s.uni.toggle(121, 80, 0)?;
-    s.uni.toggle(121, 81, 0)?;
-    s.uni.toggle(121, 82, 0)?;
-    s.uni.toggle(122, 79, 0)?;
-    s.uni.toggle(122, 82, 0)?;
-    s.uni.toggle(123, 79, 0)?;
-    s.uni.toggle(123, 82, 0)?;
-    s.uni.toggle(125, 79, 0)?;
-    s.uni.toggle(126, 79, 0)?;
-    s.uni.toggle(126, 83, 0)?;
-    s.uni.toggle(127, 80, 0)?;
-    s.uni.toggle(127, 82, 0)?;
-    s.uni.toggle(128, 81, 0)?;
-
-    s.uni.toggle(131, 81, 0)?;
-    s.uni.toggle(131, 82, 0)?;
-    s.uni.toggle(132, 81, 0)?;
-    s.uni.toggle(132, 82, 0)?;
-
-    //Wall in player 0 area!
-    let bw = 5; // buffer width
-
-    // right side
-    for row in (70-bw)..(83+bw+1) {
-        s.uni.set_unchecked(132+bw, row, CellState::Wall);
-    }
-
-    // top side
-    for col in (100-bw)..109 {
-        s.uni.set_unchecked(col, 70-bw, CellState::Wall);
-    }
-    for col in 114..(132+bw+1) {
-        s.uni.set_unchecked(col, 70-bw, CellState::Wall);
-    }
-
-    // left side
-    for row in (70-bw)..(83+bw+1) {
-        s.uni.set_unchecked(100-bw, row, CellState::Wall);
-    }
-
-    // bottom side
-    for col in (100-bw)..120 {
-        s.uni.set_unchecked(col, 83+bw, CellState::Wall);
-    }
-    for col in 125..(132+bw+1) {
-        s.uni.set_unchecked(col, 83+bw, CellState::Wall);
-    }
-
-    //Wall in player 1!
-    for row in 10..19 {
-        s.uni.set_unchecked(25, row, CellState::Wall);
-    }
-    for col in 10..25 {
-        s.uni.set_unchecked(col, 10, CellState::Wall);
-    }
-    for row in 11..23 {
-        s.uni.set_unchecked(10, row, CellState::Wall);
-    }
-    for col in 11..26 {
-        s.uni.set_unchecked(col, 22, CellState::Wall);
-    }
+    // 2 fumaroles
+    let pat2 =
+        Pattern("2o13b$o2b2o4bo5b$b2ob2o3bo5b$4b2o3bo5b$4b2o9b$b2ob2o4b2o3b$o2b2o3bo4bob$2o6bo4bob$8bo4bob$9bo2bo2b$7bobo2bobo$7b2o4b2o!".to_owned());
+    s.uni.write_pattern(&pat2)?;
 
     Ok(())
 }

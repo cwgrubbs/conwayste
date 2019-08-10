@@ -180,7 +180,12 @@ impl Pattern {
     ///
     /// # Panics
     ///
-    /// This function will panic if an attempt is made to write out of bounds.
+    /// This function panics when:
+    /// * An attempt is made to write out of bounds.
+    /// * If `grid` is a `GenState`, character represents a player that is out of range
+    /// (`self.player_states.len()`).
+    /// * If `grid` is a `GenState`, the player_id specified by `visibility` is out of range
+    /// (`self.player_states.len()`).
     ///
     /// # Note
     ///

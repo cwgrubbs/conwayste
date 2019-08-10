@@ -25,7 +25,7 @@ mod universe_tests {
 
     #[test]
     fn new_universe_with_valid_dims() {
-        let uni = generate_test_universe_with_default_params(UniType::Server);
+        let uni = generate_test_universe_with_default_params(UniType::Full);
         let universe_as_region = Region::new(0, 0, 256, 128);
 
         assert_eq!(uni.width(), 256);
@@ -64,13 +64,13 @@ mod universe_tests {
 
     #[test]
     fn new_universe_first_gen_is_one() {
-        let uni = generate_test_universe_with_default_params(UniType::Server);
+        let uni = generate_test_universe_with_default_params(UniType::Full);
         assert_eq!(uni.latest_gen(), 1);
     }
 
     #[test]
     fn next_test_data1() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
 
         // r-pentomino
         let _ = uni.toggle(16, 15, 0);
@@ -88,7 +88,7 @@ mod universe_tests {
 
     #[test]
     fn set_unchecked_with_valid_rows_and_cols() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let max_width = uni.width()-1;
         let max_height = uni.height()-1;
         let mut cell_state;
@@ -114,13 +114,13 @@ mod universe_tests {
     #[test]
     #[should_panic]
     fn set_unchecked_with_invalid_rols_and_cols_panics() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         uni.set_unchecked(257, 129, CellState::Alive(None));
     }
 
     #[test]
     fn universe_cell_states_are_dead_on_creation() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let max_width = uni.width()-1;
         let max_height = uni.height()-1;
         
@@ -134,7 +134,7 @@ mod universe_tests {
 
     #[test]
     fn set_checked_verify_players_remain_within_writable_regions() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let max_width = uni.width()-1;
         let max_height = uni.height()-1;
         let player_id = 1; // writing into player 1's regions
@@ -164,7 +164,7 @@ mod universe_tests {
 
     #[test]
     fn toggle_checked_outside_a_player_writable_region_fails() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player_one = 0;
         let player_two = 1;
         let row = 0;
@@ -195,7 +195,7 @@ mod universe_tests {
 
     #[test]
     fn each_non_dead_detects_some_cells() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player1 = 1;
 
         // glider
@@ -234,7 +234,7 @@ mod universe_tests {
 
     #[test]
     fn each_non_dead_detects_fog() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player0 = 0;
         let player1 = 1;
 
@@ -252,8 +252,8 @@ mod universe_tests {
     #[test]
     fn universe_apply_basic2() {
         // we do Server to Server so that the fog doesn't interfere with pattern comparison
-        let mut src_uni = generate_test_universe_with_default_params(UniType::Server);
-        let mut dst_uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut src_uni = generate_test_universe_with_default_params(UniType::Full);
+        let mut dst_uni = generate_test_universe_with_default_params(UniType::Full);
         let player1 = 1;
         // glider
         src_uni.next(); // just ensure we're at generation 2
@@ -275,7 +275,7 @@ mod universe_tests {
 
     #[test]
     fn universe_apply_but_already_applied() {
-        let mut s_uni = generate_test_universe_with_default_params(UniType::Server);  // server
+        let mut s_uni = generate_test_universe_with_default_params(UniType::Full);  // server
         let mut c_uni = generate_test_universe_with_default_params(UniType::Client); // client is missing generation 1
         let player1 = 1;
         // glider
@@ -298,7 +298,7 @@ mod universe_tests {
 
     #[test]
     fn universe_apply_but_base_gen_absent() {
-        let mut s_uni = generate_test_universe_with_default_params(UniType::Server);  // server
+        let mut s_uni = generate_test_universe_with_default_params(UniType::Full);  // server
         let mut c_uni = generate_test_universe_with_default_params(UniType::Client); // client is missing generation 1
         let player1 = 1;
         // glider
@@ -325,20 +325,20 @@ mod universe_tests {
 
     #[test]
     fn universe_diff_crazy_numbers_is_none() {
-        let uni = generate_test_universe_with_default_params(UniType::Server);
+        let uni = generate_test_universe_with_default_params(UniType::Full);
         assert!(uni.diff(123, 456, None).is_none());
     }
 
     #[test]
     #[should_panic]
     fn universe_diff_crazier_numbers_panics() {
-        let uni = generate_test_universe_with_default_params(UniType::Server);
+        let uni = generate_test_universe_with_default_params(UniType::Full);
         assert!(uni.diff(456, 456, None).is_none());
     }
 
     #[test]
     fn universe_diff_good_numbers_is_valid() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player1 = 1;
         // glider
         uni.toggle(16, 15, player1).unwrap();
@@ -365,7 +365,7 @@ mod universe_tests {
 
     #[test]
     fn universe_diff_zero_base_gen() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player1 = 1;
         // glider
         uni.toggle(16, 15, player1).unwrap();
@@ -384,7 +384,7 @@ mod universe_tests {
 
     #[test]
     fn universe_diff_some_player1_sees_cells() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player1 = 1;
         // glider
         uni.toggle(16, 15, player1).unwrap();
@@ -402,7 +402,7 @@ mod universe_tests {
 
     #[test]
     fn universe_diff_some_other_player_does_not_see_cells() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player1 = 1;
         let other_player = 0;
         // glider

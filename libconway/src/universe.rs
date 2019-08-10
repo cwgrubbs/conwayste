@@ -85,7 +85,7 @@ impl BigBang {
     }
 
     /// Determines whether we are running a Server or a Client.
-    /// * `true` - Server
+    /// * `true` - Server (uses `UniType::Full`)
     /// * `false` - Client
     pub fn server_mode(mut self, is_server: bool) -> BigBang {
         self.is_server = is_server;
@@ -434,6 +434,15 @@ impl CharGrid for GenState {
         self.cells.height()
     }
 
+    /// Write a character at the given coordinates with the given visibilty options.
+    ///
+    /// # Panics
+    ///
+    /// This function panics when:
+    /// * An attempt is made to write out of bounds.
+    /// * Character is invalid for a `GenState` (see `GenState::is_valid`) or represents a player
+    /// that is out of range (`self.player_states.len()`).
+    /// * The player_id specified by `visibility` is out of range (`self.player_states.len()`).
     #[inline]
     fn write_at_position(&mut self, col: usize, row: usize, ch: char, visibility: Option<usize>) {
         if !GenState::is_valid(ch) {
@@ -1624,6 +1633,20 @@ impl Universe {
             }
         }
     }
+
+    /// Write an RLE pattern to the latest generation. Usually this would only be used in single
+    /// player games (that is, no server is involved).
+    ///
+    /// # Panics
+    ///
+    /// This function panics when:
+    /// * An attempt is made to write out of bounds.
+    /// * Character is invalid for a `GenState` (see `GenState::is_valid`) or represents a player
+    /// that is out of range (`self.player_states.len()`).
+    /// * The player_id specified by `visibility` is out of range (`self.player_states.len()`).
+    pub fn write_pattern(&mut self, pattern: &Pattern) -> ConwayResult<()> {
+        pattern.to_grid(&mut self.gen_states[self.state_index], None)
+    }
 }
 
 
@@ -1742,7 +1765,7 @@ pub mod test_helpers {
 
     #[derive(PartialEq)]
     pub enum UniType {
-        Server,
+        Full,   // server or non-network client
         Client,
     }
 
@@ -1756,7 +1779,7 @@ pub mod test_helpers {
         let bigbang = BigBang::new()
             .width(256)
             .height(128)
-            .server_mode(uni_type == UniType::Server)
+            .server_mode(uni_type == UniType::Full)
             .history(GEN_BUFSIZE)
             .fog_radius(9)
             .add_players(players)
@@ -1804,7 +1827,7 @@ mod universe_tests {
 
     #[test]
     fn set_checked_cannot_set_a_fog_cell() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player_id = 1; // writing into player 1's regions
         let alive_player_cell = CellState::Alive(Some(player_id));
         let state_index = uni.state_index;
@@ -1821,7 +1844,7 @@ mod universe_tests {
 
     #[test]
     fn toggle_unchecked_cell_toggled_is_owned_by_player() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let state_index = uni.state_index;
         let row = 0;
         let col = 0;
@@ -1838,7 +1861,7 @@ mod universe_tests {
 
     #[test]
     fn toggle_unchecked_cell_toggled_by_both_players_repetitively() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let state_index = uni.state_index;
         let row = 0;
         let col = 0;
@@ -1863,7 +1886,7 @@ mod universe_tests {
 
     #[test]
     fn toggle_checked_players_cannot_toggle_a_wall_cell() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         //let player_one = 0;
         let player_two = 1;
         let row = 0;
@@ -1879,7 +1902,7 @@ mod universe_tests {
 
     #[test]
     fn toggle_checked_players_can_toggle_an_known_cell_if_writable() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let player_one = 0;
         let player_two = 1;
         let row = 0;
@@ -1895,7 +1918,7 @@ mod universe_tests {
 
     #[test]
     fn toggle_checked_players_cannot_toggle_an_unknown_cell() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         //let player_one = 0;
         let player_two = 1;
         let row = 0;
@@ -1957,7 +1980,7 @@ mod universe_tests {
 
     #[test]
     fn verify_fog_circle_bitmap_generation() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
 
         let fog_radius_of_nine = vec![
             vec![0xf007ffffffffffff],
@@ -2120,7 +2143,7 @@ mod universe_tests {
 
     #[test]
     fn universe_copy_from_bit_grid_as_player() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let grid = Pattern("64o$64o!".to_owned()).to_new_bit_grid(64, 2).unwrap();
 
         let write_pattern_as = Some(1); // player 1
@@ -2141,7 +2164,7 @@ mod universe_tests {
 
     #[test]
     fn universe_copy_from_bit_grid_as_player_out_of_range() {
-        let mut uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut uni = generate_test_universe_with_default_params(UniType::Full);
         let grid = Pattern("64o$64o!".to_owned()).to_new_bit_grid(64, 2).unwrap();
 
         let write_pattern_as = Some(0); // player 0
@@ -2162,7 +2185,7 @@ mod universe_tests {
 
     #[test]
     fn universe_apply_basic() {
-        let mut s_uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut s_uni = generate_test_universe_with_default_params(UniType::Full);
         let mut c_uni = generate_test_universe_with_default_params(UniType::Client); // client is missing generation 1
         let player1 = 1;
         // glider
@@ -2185,7 +2208,7 @@ mod universe_tests {
 
     #[test]
     fn universe_apply_basic_player_visibility() {
-        let mut s_uni = generate_test_universe_with_default_params(UniType::Server);
+        let mut s_uni = generate_test_universe_with_default_params(UniType::Full);
         let mut c_uni = generate_test_universe_with_default_params(UniType::Client); // client is missing generation 1
         let player1 = 1;
         // glider
