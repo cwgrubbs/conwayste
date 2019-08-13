@@ -178,6 +178,8 @@ impl Pattern {
     /// characters in pattern must be valid for the grid, as determined by `::is_valid(ch)`, with
     /// one exception: `NO_OP_CHAR` (`"`). Cells are skipped with runs containing `NO_OP_CHAR`.
     ///
+    /// Calling this is equivalent to calling `to_grid_with_origin` with an origin of 0,0.
+    ///
     /// # Panics
     ///
     /// This function panics when:
@@ -192,9 +194,34 @@ impl Pattern {
     /// If there is a parsing error, `grid` may be in a partially written state. If this is a
     /// problem, then back up `grid` before calling this.
     pub fn to_grid<G: CharGrid>(&self, grid: &mut G, visibility: Option<usize>) -> ConwayResult<()> {
+        self.to_grid_with_origin(grid, visibility, 0, 0)
+    }
+
+    /// Writes the pattern to a BitGrid or GenState (that is, anything implementing CharGrid)
+    /// starting at the specified origin (`origin_col`, `origin_row`).  The characters in pattern
+    /// must be valid for the grid, as determined by `::is_valid(ch)`, with one exception:
+    /// `NO_OP_CHAR` (`"`).  Cells are skipped with runs containing `NO_OP_CHAR`.
+    ///
+    /// Calling this with an origin of 0,0 is equivalent to calling `to_grid`.
+    ///
+    /// # Panics
+    ///
+    /// This function panics when:
+    /// * An attempt is made to write out of bounds.
+    /// * If `grid` is a `GenState`, character represents a player that is out of range
+    /// (`self.player_states.len()`).
+    /// * If `grid` is a `GenState`, the player_id specified by `visibility` is out of range
+    /// (`self.player_states.len()`).
+    ///
+    /// # Note
+    ///
+    /// If there is a parsing error, `grid` may be in a partially written state. If this is a
+    /// problem, then back up `grid` before calling this.
+    pub fn to_grid_with_origin<G: CharGrid>(&self, grid: &mut G, visibility: Option<usize>,
+                                            origin_col: usize, origin_row: usize) -> ConwayResult<()> {
         use ConwayError::*;
-        let mut col: usize = 0;
-        let mut row: usize = 0;
+        let mut col: usize = origin_col;
+        let mut row: usize = origin_row;
         let mut char_indices = self.0.char_indices();
         let mut ch;
         let mut i;
@@ -239,7 +266,7 @@ impl Pattern {
                         digits_to_number(&digits)?
                     } else { 1 };
                     digits.clear();
-                    col = 0;
+                    col = origin_col;
                     row += number;
                 }
                 '\r' | '\n' => {

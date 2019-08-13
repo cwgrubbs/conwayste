@@ -1647,6 +1647,13 @@ impl Universe {
     pub fn write_pattern(&mut self, pattern: &Pattern) -> ConwayResult<()> {
         pattern.to_grid(&mut self.gen_states[self.state_index], None)
     }
+
+    /// Calling this with an origin of 0,0 is equivalent to calling `write_pattern`.
+    // TODO: copy from above
+    pub fn write_pattern_with_origin(&mut self, pattern: &Pattern,
+                                     col: usize, row:usize) -> ConwayResult<()> {
+        pattern.to_grid_with_origin(&mut self.gen_states[self.state_index], None, col, row)
+    }
 }
 
 

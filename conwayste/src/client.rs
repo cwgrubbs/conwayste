@@ -143,9 +143,12 @@ fn init_patterns(s: &mut MainState) -> ConwayResult<()> {
     s.uni.write_pattern(&pat)?;
 
     // 2 fumaroles
-    let pat2 =
-        Pattern("2o13b$o2b2o4bo5b$b2ob2o3bo5b$4b2o3bo5b$4b2o9b$b2ob2o4b2o3b$o2b2o3bo4bob$2o6bo4bob$8bo4bob$9bo2bo2b$7bobo2bobo$7b2o4b2o!".to_owned());
-    s.uni.write_pattern(&pat2)?;
+    let pat2 = Pattern("2o13b$o2b2o4bo5b$b2ob2o3bo5b$4b2o3bo5b$4b2o9b$b2ob2o4b2o3b$o2b2o3bo4bob$2o6bo4bob$8bo4bob$9bo2bo2b$7bobo2bobo$7b2o4b2o!".to_owned());
+    s.uni.write_pattern_with_origin(&pat2, 20, 20)?;
+
+    // achim's p144
+    let pat3 = Pattern("2o24b2o$2o24b2o$18b2o8b$17bo2bo7b$18b2o8b$14bo13b$13bobo12b$12bo3bo11b$12bo2bo12b2$12bo2bo12b$11bo3bo12b$12bobo13b$13bo14b$8b2o18b$7bo2bo17b$8b2o18b$2o24b2o$2o24b2o!".to_owned());
+    s.uni.write_pattern_with_origin(&pat3, 3, 40)?;
 
     Ok(())
 }
