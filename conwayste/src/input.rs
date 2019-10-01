@@ -109,17 +109,6 @@ mod test {
     }
 
     #[test]
-    fn test_enqueue() {
-        let mut im = InputManager::new(InputDeviceType::PRIMARY);
-
-        let action = InputAction::MouseClick(MouseButton::Left, 10, 10);
-        im.add(action);
-
-        let action = InputAction::MouseClick(MouseButton::Left, 10, 10);
-        assert_eq!(im.peek(), Some(&action));
-    }
-
-    #[test]
     fn test_dequeue() {
         let mut im = InputManager::new(InputDeviceType::PRIMARY);
         assert_eq!(im.has_more(), false);
